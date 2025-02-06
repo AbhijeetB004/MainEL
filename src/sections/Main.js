@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { io } from 'socket.io-client';
 import Content from "../components/Content";
+import Content2 from "../components/Content2"
 import Header from "../components/Header";
 import MidHeader from "../components/MidHeader";
 
@@ -39,6 +40,7 @@ const Main = () => {
       <MidHeader isAIMode={isAIMode} setIsAIMode={setIsAIMode} />
       <div className="w-full h-[1px] bg-myGrey" />
       <Content socket={socket} isAIMode={isAIMode} />
+      <Content2 socket={socket} isAIMode={isAIMode} />  
     </div>
   );
 };

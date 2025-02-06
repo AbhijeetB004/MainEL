@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import PriorityCards2 from "./PriorityCard2";
 
-const Content = () => {
+const Content2 = ({ isAIMode }) => {
   const [automated, setautomated] = useState(true);
   const [selectedCard, setSelectedCard] = useState("efnwhfwhn1");
   const [priorityCard, setpriorityCard] = useState([
@@ -97,12 +97,48 @@ const Content = () => {
     ],
   ]);
 
-  const [isAIMode, setIsAIMode] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [currentEmergency, setCurrentEmergency] = useState(null);
   const [currentFacility, setCurrentFacility] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
+  
+  const fetchCoordinates = async (location) => {
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}`);
+      const data = await response.json();
+      if (data.length > 0) {
+        return {
+          latitude: data[0].lat,
+          longitude: data[0].lon,
+        };
+      } else {
+        console.error('No coordinates found for location:', location);
+        return null;
+      }
+    } catch (error) {
+      console.error('Error fetching coordinates:', error);
+      return null;
+    }
+  };
 
+  const fetchNearestFacility = async (emergency) => {
+    if (!emergency.latitude || !emergency.longitude) {
+      console.error('Emergency missing latitude or longitude:', emergency);
+      return null; // Return null if data is invalid
+    }
+    // Fetch logic for nearest facility
+    try {
+      const response = await fetch(`http://localhost:3001/api/facilities?latitude=${emergency.latitude}&longitude=${emergency.longitude}`);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const facility = await response.json();
+      return facility; // Return the fetched facility
+    } catch (error) {
+      console.error('Error fetching nearest facility:', error);
+      return null; // Handle the error appropriately
+    }
+  };
   const updateLabel = (e) => {
     let theCards = [];
     priorityCard.forEach((card) => {
@@ -118,53 +154,41 @@ const Content = () => {
     setpriorityCard(theCards);
   };
 
-  const toggleAIMode = async () => {
-    const newAIMode = !isAIMode;
-    setIsAIMode(newAIMode);
 
-    if (newAIMode) {
-      console.log('AI Mode Activated: Fetching all emergencies...');
-      await handleAIDispatch();
-    }
-  };
 
   const handleAIDispatch = async () => {
-    try {
-      const emergencies = priorityCard.map(card => ({
-        emergency: card.emergency,
-        location: card.location,
-        id: card.id,
-        latitude: card.latitude,
-        longitude: card.longitude,
-      }));
+    const allEmergencies = priorityCard.flat();
+    console.log('Dispatching emergencies:', allEmergencies); // Log emergencies to check their state
 
-      const facilities = await Promise.all(emergencies.map(fetchNearestFacility));
+    // Fetch coordinates for each emergency
+    const emergenciesWithCoordinates = await Promise.all(allEmergencies.map(async (emergency) => {
+      const coordinates = await fetchCoordinates(emergency.location);
+      return {
+        ...emergency,
+        latitude: coordinates ? coordinates.latitude : null,
+        longitude: coordinates ? coordinates.longitude : null,
+      };
+    }));
 
-      // Show confirmation modal for each emergency
-      for (let i = 0; i < emergencies.length; i++) {
-        const emergency = emergencies[i];
-        const facility = facilities[i];
+    const facilities = await Promise.all(emergenciesWithCoordinates.map(fetchNearestFacility));
 
-        if (facility) {
-          setShowStatusModal(true);
-          setCurrentEmergency(emergency);
-          setCurrentFacility(facility);
-          await new Promise(resolve => setTimeout(resolve, 5000)); // Wait for 5 seconds before moving to the next
-        } else {
-          console.error(`No facility found for emergency: ${emergency.id}`);
-          // Handle error (e.g., show a message)
-        }
+    // Show confirmation modal for each emergency
+    for (let i = 0; i < emergenciesWithCoordinates.length; i++) {
+      const emergency = emergenciesWithCoordinates[i];
+      const facility = facilities[i];
+
+      if (facility) {
+        console.log('Facility found for emergency:', emergency, facility);
+      } else {
+        console.error('No facility found for emergency:', emergency);
       }
-    } catch (error) {
-      console.error('Error in AI dispatch:', error);
-      // Display error message in the UI
-      setErrorMessage('Failed to fetch emergencies or facilities. Please try again.');
     }
   };
 
   useEffect(() => {
     if (isAIMode) {
       console.log('AI Mode Activated: All emergencies will be dispatched to the nearest facilities.');
+      handleAIDispatch();
     }
   }, [isAIMode]);
 
@@ -174,7 +198,7 @@ const Content = () => {
       <div>
         <div className="flex">
           <div
-            onClick={toggleAIMode}
+            
             className={`w-36 bg-white text-red-600 border-gray-300 border-[1px] items-center justify-center flex h-10 rounded-lg ${isAIMode ? 'text-white bg-red-600' : ''}`}
           >
             <h3>{isAIMode ? 'AI Mode On' : 'AI Mode Off'}</h3>
@@ -253,4 +277,4 @@ const Content = () => {
   );
 };
 
-export default Content;
+export default Content2;
