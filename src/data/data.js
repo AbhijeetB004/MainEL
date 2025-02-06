@@ -132,7 +132,7 @@ const automatedData = [
     name: "Gurpreet Sign",
     status: "open",
     number: "1211 636 5993",
-    emergency: "Being Followed",
+    emergency: "POLICE",
     priority: 1,
     transcript: `Caller: Hello there is a man following me.
         Dispatcher: Okay, stay calm. Can you tell me your location?

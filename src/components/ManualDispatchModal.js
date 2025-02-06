@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
-import { geocodeLocation } from '../utils/emergencyUtils';
 
 const ManualDispatchModal = ({ emergency, onClose, onConfirm }) => {
   const [selectedType, setSelectedType] = useState(null);
@@ -11,6 +10,27 @@ const ManualDispatchModal = ({ emergency, onClose, onConfirm }) => {
   const [loading, setLoading] = useState(true);
 
   // Initialize coordinates when modal opens
+  const geocodeLocation = async (location) => {
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}`);
+      const data = await response.json();
+      if (data.length > 0) {
+        console.log(data[0].lat);
+        console.log(data[0].lon);
+        return {
+          latitude: parseFloat(data[0].lat),
+          longitude: parseFloat(data[0].lon)
+        };
+      } else {
+        console.error('No coordinates found for location:', location);
+        return null;
+      }
+    } catch (error) {
+      console.error('Error fetching coordinates:', error);
+      return null;
+    }
+  };
+
   useEffect(() => {
     const initializeCoordinates = async () => {
       setLoading(true);
@@ -24,6 +44,7 @@ const ManualDispatchModal = ({ emergency, onClose, onConfirm }) => {
         // Otherwise, geocode the location
         const geocoded = await geocodeLocation(emergency.location);
         if (geocoded) {
+          console.log("geocoded", geocoded)
           setCoordinates(geocoded);
         } else {
           // Fallback to Bangalore coordinates if geocoding fails
@@ -143,7 +164,18 @@ const ManualDispatchModal = ({ emergency, onClose, onConfirm }) => {
                     Distance: {Math.round(facility.distance * 10) / 10} km
                   </p>
                   <button
-                    onClick={() => onConfirm({ facilityId: facility.id })}
+                    onClick={() => onConfirm({ 
+                      facilityId: facility.id, 
+                      emergencyId: emergency.id,
+                      type: emergency.emergency,
+                      priority: emergency.priority,
+                      callerName: emergency.name,
+                      callerNumber: emergency.number,
+                      location: emergency.location,
+                      latitude: coordinates.latitude,
+                      longitude: coordinates.longitude,
+                      transcript: emergency.transcript
+                    })}
                     className="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
                   >
                     Select Facility

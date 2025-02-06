@@ -28,6 +28,7 @@ const PriorityCards = ({
   const [selectedFacility, setSelectedFacility] = useState(null);
   const [loading, setLoading] = useState(true);
   const [facilities, setFacilities] = useState([]);
+  const [dispatchStatus, setDispatchStatus] = useState(null); // State to track dispatch status
 
   // setting up webserver connection
   const socket = io("http://localhost:3001", { transports: ["websocket"] });
@@ -94,14 +95,43 @@ const PriorityCards = ({
 
   const handleDispatchConfirm = async (dispatchData) => {
     try {
-      const response = await fetch('/api/dispatch', {
+      // Log the dispatchData to check its structure
+      console.log('Dispatch Data:', dispatchData);
+
+      // Step 1: Create the emergency
+      const emergencyResponse = await fetch('http://localhost:3001/api/emergency/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          ...dispatchData,
-          emergencyId: selectedEmergency.id
+          type: dispatchData.type, // Ensure this is set correctly
+          priority: dispatchData.priority, // Ensure this is set correctly
+          callerName: dispatchData.callerName, // Ensure this is set correctly
+          callerNumber: dispatchData.callerNumber, // Ensure this is set correctly
+          location: dispatchData.location, // Ensure this is set correctly
+          latitude: dispatchData.latitude, // Ensure this is set correctly
+          longitude: dispatchData.longitude, // Ensure this is set correctly
+          transcript: dispatchData.transcript // Ensure this is set correctly
+        }),
+      });
+
+      if (!emergencyResponse.ok) {
+        throw new Error('Failed to create emergency');
+      }
+
+      const emergencyData = await emergencyResponse.json();
+      const emergencyId = emergencyData.id; // Get the created emergency ID
+
+      // Step 2: Dispatch the emergency
+      const response = await fetch('http://localhost:3001/api/dispatch', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          emergencyId: emergencyId,
+          facilityId: dispatchData.facilityId // Assuming selectedFacility is available
         }),
       });
 
@@ -109,6 +139,7 @@ const PriorityCards = ({
         throw new Error('Failed to create dispatch');
       }
 
+      // Update the priority card status
       const updatedCards = priorityCard.map(card =>
         card.id === selectedEmergency.id
           ? { ...card, status: 'Dispatched' }
@@ -116,6 +147,10 @@ const PriorityCards = ({
       );
       setpriorityCard(updatedCards);
       
+      // Set dispatch status message
+      setDispatchStatus(`Emergency dispatched to facility with ID: ${dispatchData.facilityId}`);
+
+      // Optionally close the dispatch modal
       setShowDispatchModal(false);
     } catch (error) {
       console.error('Error creating dispatch:', error);
@@ -259,12 +294,14 @@ const PriorityCards = ({
                     Get Location
                   </h3>
                 </div>
-                <button
-                  onClick={() => isAIMode ? handleAIDispatch() : handleManualDispatch(card)}
-                  className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-                >
-                  Schedule Dispatch
-                </button>
+                {!dispatchStatus && (
+                  <button
+                    onClick={() => isAIMode ? handleAIDispatch() : handleManualDispatch(card)}
+                    className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                  >
+                    Schedule Dispatch
+                  </button>
+                )}
               </div>
             </div>
           ) : (
@@ -312,21 +349,23 @@ const PriorityCards = ({
         }
       })}
 
-{showDispatchModal && selectedEmergency && !isAIMode && (
-  <ManualDispatchModal
-    emergency={selectedEmergency}
-    onClose={() => setShowDispatchModal(false)}
-    onConfirm={handleDispatchConfirm}
-  />
-)}
+      {showDispatchModal && selectedEmergency && !isAIMode && (
+        <ManualDispatchModal
+          emergency={selectedEmergency}
+          onClose={() => setShowDispatchModal(false)}
+          onConfirm={handleDispatchConfirm}
+        />
+      )}
 
-{isAIMode && selectedEmergency && (
-  <AIDispatchModal
-    emergency={selectedEmergency} 
-    onClose={() => setSelectedEmergency(null)}
-    onConfirm={handleDispatchConfirm}
-  />
-)}
+      {isAIMode && selectedEmergency && (
+        <AIDispatchModal
+          emergency={selectedEmergency}
+          onClose={() => setSelectedEmergency(null)}
+          onConfirm={handleDispatchConfirm}
+        />
+      )}
+
+      {dispatchStatus && <div className="text-green-500">{dispatchStatus}</div>}
     </div>
   );
 };

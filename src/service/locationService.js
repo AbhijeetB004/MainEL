@@ -1,7 +1,8 @@
 import fetch from 'node-fetch';
 
 export const findNearestFacility = async (lat, lon, facilities) => {
-  const sortedFacilities = await findNearestFacilities(lat, lon, facilities, 1);
+  const sortedFacilities = await findNearestFacilities(lat, lon, facilities, 10);
+  console.log("hello")
   return sortedFacilities[0];
 };
 

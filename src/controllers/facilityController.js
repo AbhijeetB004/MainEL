@@ -81,6 +81,8 @@ export const getNearestFacility = async (req, res) => {
       where: { type: type.toUpperCase() }
     });
 
+    console.log('Facilities found:', facilities);
+
     if (facilities.length === 0) {
       return res.json(null);
     }
@@ -88,7 +90,8 @@ export const getNearestFacility = async (req, res) => {
     const lat = parseFloat(latitude);
     const lon = parseFloat(longitude);
 
-    const nearest = findNearestFacility(lat, lon, facilities);
+    const nearest = await findNearestFacility(lat, lon, facilities);
+    console.log('Nearest facility:', nearest);
     res.json(nearest);
   } catch (error) {
     console.error('Error in getNearestFacility:', error);
