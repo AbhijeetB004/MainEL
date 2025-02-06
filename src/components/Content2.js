@@ -119,6 +119,9 @@ const Content2 = ({ isAIMode }) => {
   const [currentEmergencyIndex, setCurrentEmergencyIndex] = useState(0);
   const [emergenciesWithFacilities, setEmergenciesWithFacilities] = useState([]);
 
+  // Define the dispatch status state
+  const [dispatchStatus, setDispatchStatus] = useState('');
+
   const fetchCoordinates = async (location) => {
     try {
       const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}`);
@@ -269,21 +272,76 @@ const Content2 = ({ isAIMode }) => {
     setIsConfirmationOpen(false);
   };
 
-  const handleConfirmDispatch = () => {
+  const handleConfirmDispatch = async () => {
     const currentEmergency = emergenciesWithFacilities[currentEmergencyIndex];
-    
-    // Logic to handle the dispatch confirmation
+
+    // Log the current emergency to check its structure
     console.log('Dispatching to:', currentEmergency.emergency, 'Nearest Facility:', currentEmergency.facility);
 
-    // Here you can add any additional logic for dispatching, such as an API call
-    // For example:
-    // await dispatchEmergency(currentEmergency);
+    try {
+      // Ensure the type is defined
+      
 
-    // Move to the next emergency after confirming
-    if (currentEmergencyIndex < emergenciesWithFacilities.length - 1) {
-      setCurrentEmergencyIndex(prevIndex => prevIndex + 1); // Move to the next emergency
-    } else {
-      setIsModalOpen(false); // Close the modal after the last emergency
+      // Step 1: Create the emergency
+      const emergencyResponse = await fetch('http://localhost:3001/api/emergency/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: currentEmergency.emergency.emergency === "HOSPITAL" ? "MEDICAL" : currentEmergency.emergency.emergency, // Ensure this is set correctly
+          priority: currentEmergency.emergency.priority, // Ensure this is set correctly
+          callerName: currentEmergency.emergency.callerName || 'Unknown', // Default value if undefined
+          callerNumber: currentEmergency.emergency.callerNumber || 'Unknown', // Default value if undefined
+          location: currentEmergency.emergency.location, // Ensure this is set correctly
+          latitude: parseFloat(currentEmergency.emergency.latitude), // Ensure this is set correctly
+          longitude: parseFloat(currentEmergency.emergency.longitude), // Ensure this is set correctly
+          transcript: currentEmergency.emergency.transcript // Ensure this is set correctly
+        }),
+      });
+
+      if (!emergencyResponse.ok) {
+        throw new Error('Failed to create emergency');
+      }
+
+      const emergencyData = await emergencyResponse.json();
+      const emergencyId = emergencyData.id;
+
+      // Step 2: Dispatch the emergency
+      const response = await fetch('http://localhost:3001/api/dispatch', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          emergencyId: emergencyId,
+          facilityId: currentEmergency.facility.id
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create dispatch');
+      }
+
+      // Update the priority card status
+      const updatedCards = priorityCard.map(card =>
+        card.id === currentEmergency.emergency.id
+          ? { ...card, status: 'Dispatched' }
+          : card
+      );
+      setpriorityCard(updatedCards);
+      
+      // Show alert to the user
+      window.alert(`Emergency dispatched to facility with ID: ${currentEmergency.facility.id}`);
+
+      // Move to the next emergency
+      if (currentEmergencyIndex < emergenciesWithFacilities.length - 1) {
+        setCurrentEmergencyIndex(prevIndex => prevIndex + 1); // Move to the next emergency
+      } else {
+        setIsModalOpen(false); // Optionally close the modal after the last emergency
+      }
+    } catch (error) {
+      console.error('Error creating dispatch:', error);
     }
   };
   
@@ -296,9 +354,13 @@ const Content2 = ({ isAIMode }) => {
 
   return (
     <div className="py-8">
-      
+      {/* Render the dispatch status message */}
+      {dispatchStatus && (
+        <div className="alert alert-success">
+          {dispatchStatus}
+        </div>
+      )}
 
-      
       <div className="py-8">
       
       
