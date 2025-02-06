@@ -1,5 +1,8 @@
 import prisma from '../../prisma/client.js';
 import { findNearestFacilities, findNearestFacility, calculateDistance } from '../service/locationService.js';
+import { PrismaClient } from '@prisma/client';
+
+const prismaClient = new PrismaClient();
 
 // Create a class or object to hold related functions
 class FacilityService {
@@ -96,5 +99,25 @@ export const getNearestFacility = async (req, res) => {
   } catch (error) {
     console.error('Error in getNearestFacility:', error);
     res.status(500).json({ error: 'Error finding nearest facility' });
+  }
+};
+
+// Get facility by ID
+export const getFacilityById = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const facility = await prismaClient.emergencyFacility.findUnique({
+      where: { id },
+    });
+
+    if (!facility) {
+      return res.status(404).json({ error: 'Facility not found' });
+    }
+
+    res.json(facility);
+  } catch (error) {
+    console.error('Error fetching facility:', error);
+    res.status(500).json({ error: 'Error fetching facility' });
   }
 }; 

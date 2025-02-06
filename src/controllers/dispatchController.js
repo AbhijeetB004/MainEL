@@ -78,8 +78,7 @@ export const getFacilityDispatches = async (req, res) => {
     const dispatches = await prisma.dispatch.findMany({
       where: { facilityId },
       include: {
-        emergency: true,
-        facility: true
+        emergency: true
       }
     });
     

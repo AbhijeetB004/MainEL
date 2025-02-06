@@ -3,7 +3,7 @@ const liveData = [
     name: "Lilly Dole",
     status: "open",
     number: "292-292-2983",
-    emergency: "Abuse",
+    emergency: "POLICE",
     priority: 2,
     transcript: `Caller: Theres a big accident on the road.
       Dispatcher: Okay, stay calm. Can you tell me your location?
@@ -48,7 +48,7 @@ const automatedData = [
     name: "Bob Marley",
     status: "open",
     number: "292-292-2983",
-    emergency: "Car Accident",
+    emergency: "MEDICAL",
     priority: 3,
     transcript: `Caller: Theres a big accident on the road.
       Dispatcher: Okay, stay calm. Can you tell me your location?
@@ -69,7 +69,7 @@ const automatedData = [
     name: "Bruce Wayne",
     status: "open",
     number: "372-282-2839",
-    emergency: "Car Crash",
+    emergency: "MEDICAL",
     priority: 2,
     transcript: `Caller: I just saw a car accident on the road.
       Dispatcher: Okay, stay calm. Can you tell me your location?
@@ -90,7 +90,7 @@ const automatedData = [
     name: "Rachel Green",
     status: "open",
     number: "1111 666 5963",
-    emergency: "HOSPITAL",
+    emergency: "MEDICAL",
     priority: 1,
     transcript: `Caller: Hello there is a man following me.
       Dispatcher: Okay, stay calm. Can you tell me your location?
@@ -111,7 +111,7 @@ const automatedData = [
     name: "Tom Holland",
     status: "open",
     number: "444-333-2929",
-    emergency: "Car Crash",
+    emergency: "MEDICAL",
     priority: 2,
     transcript: `Caller: I need help im in a car crash.
       Dispatcher: Okay, stay calm. Can you tell me your location?
@@ -153,7 +153,7 @@ const automatedData = [
     name: "Tommy Doughlas",
     status: "open",
     number: "444-333-2929",
-    emergency: "Car Crash",
+    emergency: "MEDICAL",
     priority: 2,
     transcript: `Caller: I need help im in a car crash.
         Dispatcher: Okay, stay calm. Can you tell me your location?
@@ -174,7 +174,7 @@ const automatedData = [
     name: "Bob Marley",
     status: "open",
     number: "292-292-2983",
-    emergency: "Car Accident",
+    emergency: "MEDICAL",
     priority: 2,
     transcript: `Caller: Theres a big accident on the road.
         Dispatcher: Okay, stay calm. Can you tell me your location?
@@ -195,7 +195,7 @@ const automatedData = [
     name: "Brian Stein",
     status: "open",
     number: "372-222-2829",
-    emergency: "Shooting",
+    emergency: "POLICE",
     priority: 1,
     transcript: `Caller: I just saw a car accident on the road.
         Dispatcher: Okay, stay calm. Can you tell me your location?
@@ -216,7 +216,7 @@ const automatedData = [
     name: "Hailey Ail",
     status: "open",
     number: "1111 666 5963",
-    emergency: "Being Followed",
+    emergency: "POLICE",
     priority: 3,
     transcript: `Caller: Hello there is a man following me.
         Dispatcher: Okay, stay calm. Can you tell me your location?
@@ -237,7 +237,7 @@ const automatedData = [
     name: "Tracy Barns",
     status: "open",
     number: "444-333-2929",
-    emergency: "Car Crash",
+    emergency: "MEDICAL",
     priority: 4,
     transcript: `Caller: I need help im in a car crash.
         Dispatcher: Okay, stay calm. Can you tell me your location?

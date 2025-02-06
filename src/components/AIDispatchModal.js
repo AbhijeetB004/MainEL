@@ -17,7 +17,7 @@ const emergencyIcon = L.divIcon({
 });
 
 const AIDispatchModal = ({ isOpen, onClose, onConfirm, emergency, nearestFacility }) => {
-  // ✅ Move `useEffect` inside the component
+  
   useEffect(() => {
     const style = document.createElement('style');
     style.textContent = `
